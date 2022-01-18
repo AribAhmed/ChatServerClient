@@ -1,0 +1,168 @@
+Arib Ahmed
+aahmed10
+1643302
+
+Lab 3
+This is a documentation of how I did my Lab 5
+
+How it works technically:
+
+    My server sets up a TCP connection with a client. If more than one client tries to connect,
+    it starts making threads to support it. Once a connection is set with every client,
+    the client sends strings over TCP letting the server know what it wants to do.
+    If a client wants to connect to another client, the client goes into a connection with 
+    the client directly over Peer 2 Peer, allowing them to have their own chat.
+
+
+Protocol Description:
+	
+    Basically how I wrote my messages from the client and server are as follows.
+
+	After connection:
+
+		Client -> Server: Client ID
+		Server -> Client: Ok if Client isn't taken, not ok if it is taken.
+		
+		Client -> Server: A command, /wait, /list, /connect, /quit
+		
+		/wait:
+			If wait, client sends in IP address and Port to the Server.
+			
+			Server then reads the information and saves it to an array for anyone else to access.
+			
+			Client waits for a connection with accept()
+		
+		/list:
+			If list, client sends a message to the server requesting the list.
+			
+			Server grabs the list, then sends it back to the client
+			
+			Client prints it to the string
+
+		/connect:
+			If connect, client sends a message to the server that they want to connect and which user to connect too.
+
+			The server then finds the user, and then sends the client their request information
+			
+			Client then uses connect() to connect to the user
+
+		Chatting:
+			Both users are typing and receiving messages at the same time using threads. 
+
+		/quit:
+			If quit, client sends a message to tthe server saying they are exiting.
+			
+			Server exits that thread
+			
+			Client exits.
+
+    
+ 
+How I did my code:
+
+   
+        My client starts by connecting to the IP and Port listed in the program arguments. If
+        the client username is taken, then it is rejected. It then reads in user input for 
+        commands. If the command isn't recognized, it rejects it. If the command is /list,
+        it shows a list of all users waiting. This is done by sending a message to the server
+        asking for the list, which the server responds with the list
+
+        If the client types in /wait, the server then adds it to a waiting list of users. 
+        This is done by having a global string that the server can read. The client
+        then waits by having a bind, listen, and accept. I did this by sending in the IP and Port
+        of the client to the server. 
+
+        If a client types in /connect, it searches for the username listed for their information
+        in the server. If the server can't find the username, then its rejected. If the server
+        finds the username, then the client begins to connect() to the other client. 
+
+        Once connected, the two clients have a back and forth chat that allows them to 
+        read and send messages simultanousely. This is done using by creating a thread that 
+        only reads, and a thread that only writes. 
+
+        I made sure to catch interrupts here so the other client doesn't crash.
+
+        If the client, types in /quit, it sends the server a message to close out.
+
+    
+   
+    Some casualities:
+       
+        - When chatting, I was not able to print out the username on the same line as read, I had to go to the next line.
+
+How I tested:
+
+    This lab took a looooong time to test, but I wanted to make sure I got EVERYYTHING working
+    before I turned it in.
+
+    /list:
+    
+        - I first tested this out if a user was able to join the list with /wait.
+        Once I got it to join the list, I checked if it was able to print. 
+
+        - I started connecting more users and seeing if those printed as well. I also
+        checked to see if the numbers next to the name were accurate.
+
+        - Once I did that, I made sure to remove the users from the list if they left wait
+        or was connected to a client.
+
+    /wait:
+
+        - I made sure to see if the user adds to the list correctly
+
+        - I made sure the interrupt left the waiting correctly
+
+        - If interrupted or connected, remove from list
+
+	- My test cases were basically just to contiunally interrupt until it worked. 
+
+
+    /connect:
+
+        - Made sure it connected to the user
+
+        - Exited if no connections
+
+        - Went back to home screen if no user found
+
+	- Like /wait, I interrupted over and over until both clients were able to go back to info
+  
+    chatting:
+
+        - Tested to see if the interrupts did not fail by interrupting over and over.
+
+        - Tested if I could send multiple messages. 
+
+Error Handling:
+
+    Client: 
+        
+        - Client exits if user name is taken!
+
+        - Client exits if program arguments aren't good
+
+        - Exits if socket creation messes up
+
+        - Exits if Connect crashes
+
+        - Exits if bind fails
+
+        - Exits if user does control + c in the home screen
+
+        - User goes back to the home screen if contrl c in wait or chat
+
+        - Exits if pthread crashes
+
+        - Exits if /quit appears in home screen or in chat
+    
+    Server: 
+
+        - Exits if thread creation fails
+
+        - Exits if bind fails
+        
+        - Exit if user types in /quit
+
+        - Will break if user closes the client by closing out of Putty 
+
+        
